@@ -1,0 +1,40 @@
+import torch
+from transformers import pipeline
+sentiment_analizer = pipeline("sentiment-analysis")
+text = "movie was good and direction was fantastic!"
+sentiment = sentiment_analizer(text)
+print("sentiment Analysis:")
+print(sentiment)
+
+summarizer_model_name = "t5-small"
+summarizer_tokenizer = AutoTokenizer.from_pretrained(summarizer_model_name)
+summarizer_model = AutoModelForSeq2SeqLM.from_pretrained(summarizer_model_name)
+
+long_text = """
+Artificial Intelligence (AI) is a rapidly growing field in computer science that aims to create machines capable of
+performing tasks that typically require human intelligence. Examples include recognizing speech, making decisions,
+and translating languages. AI is divided into subfields such as machine learning, robotics, and natural language
+processing. It is revolutionizing industries and shaping the future of technology.
+"""
+inputs = summarizer_tokenizer("summarize: " + long_text, return_tensors="pt", max_length=512, truncation=True)
+summary_ids = summarizer_model.generate(inputs["input_ids"], max_length=50, min_length=10, length_penalty=2.0, num_beams=4)
+summary = summarizer_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+
+print("\nText Summarization:")
+print(summary)
+
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+model_name = "facebook/blenderbot-400M-distill"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+print("chatbot is ready! Type 'exit' to end the chat.\n")
+while True:
+    user_input = input("You: ")
+    if user_input.lower() == "exit":
+      print("chatbot: Goodbye!")
+      break
+    inputs = tokenizer(user_input, return_tensors="pt")
+    reply_ids = model.generate(**inputs)
+    response = tokenizer.decode(reply_ids[0], skip_special_tokens=True)
+    print(f"chatbot:{response}")
+
